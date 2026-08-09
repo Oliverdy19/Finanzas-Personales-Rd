@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0F1C2E">
+<link rel="manifest" href="./manifest.json" crossorigin="use-credentials">
+<link rel="icon" href="./iconos/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="./iconos/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mis cuentas">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="description" content="Control de presupuesto, ingresos, gastos y deudas en pesos dominicanos.">
 <title>Mis cuentas · RD$</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -215,6 +222,14 @@ input[type="number"],input[type="date"]{font-family:var(--mono)}
   z-index:60;box-shadow:var(--sombra);max-width:88vw;text-align:center}
 
 .cargando{display:grid;place-items:center;padding:44px;color:var(--muted);font-size:14px}
+.sin-red{position:fixed;left:0;right:0;top:0;z-index:70;background:var(--ambar);color:#fff;
+  padding:calc(7px + env(safe-area-inset-top)) 14px 7px;font-size:13px;font-weight:600;text-align:center}
+body.hay-aviso{padding-top:46px}
+.nueva-version{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--nav-h) + 78px);
+  z-index:70;background:var(--verde);color:#fff;padding:10px 16px;border-radius:999px;
+  font-size:13.5px;font-weight:600;box-shadow:var(--sombra);display:flex;gap:12px;align-items:center}
+.nueva-version button{color:#fff;text-decoration:underline;font-weight:700;font-size:13.5px}
+@media (min-width:900px){.nueva-version{bottom:26px}}
 
 /* ------------------------------------------------------------ escritorio */
 @media (min-width:900px){
@@ -958,6 +973,15 @@ function vistaAjustes(){
   </section>
 
   <section class="tarjeta">
+    <div class="cab"><div><h2>Instalar en el teléfono</h2>
+      <p class="pie">${estaInstalada()
+        ? 'Ya la estás usando como aplicación instalada.'
+        : 'Queda con su ícono en la pantalla de inicio y abre a pantalla completa, sin barra del navegador.'}</p></div></div>
+    ${estaInstalada() ? '' : `<button class="btn btn-sec" data-accion="instalar">
+      ${instalador ? 'Instalar aplicación' : 'Ver cómo instalarla'}</button>`}
+  </section>
+
+  <section class="tarjeta">
     <div class="cab"><div><h2>Tu sesión</h2>
       <p class="pie">${esc(S.usuario?.email||'')}</p></div></div>
     <button class="btn btn-sec" data-accion="salir">Cerrar sesión</button>
@@ -1324,6 +1348,7 @@ async function accion(a){
   if(a==='nuevo-fijo') return formFijo();
   if(a==='nueva-categoria') return formCategoria();
   if(a==='nueva-cuenta') return formCuenta();
+  if(a==='instalar') return instalarApp();
 
   if(a==='copiar-presupuesto'){
     let m = S.mes-1, y = S.anio; if(m<1){ m=12; y--; }
@@ -1369,6 +1394,102 @@ function menuMas(){
 }
 
 function debounce(fn,ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); }; }
+
+/* ================================================ APP INSTALABLE */
+let instalador = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  instalador = e;
+  if(S.vista === 'ajustes') pintarVista();
+});
+
+window.addEventListener('appinstalled', () => {
+  instalador = null;
+  nota('Listo, ya la tienes en tu pantalla de inicio');
+});
+
+async function instalarApp(){
+  if(!instalador){
+    modal({
+      titulo:'Cómo instalarla',
+      campos:[],
+      textoGuardar:'Entendido',
+      alGuardar: async ()=>{},
+      alRenderizar: form => {
+        const p = document.createElement('div');
+        p.style.cssText = 'font-size:14px;line-height:1.6;color:var(--ink-2)';
+        p.innerHTML = esApple()
+          ? `<p><strong>En iPhone o iPad:</strong> abre esta página en Safari, toca el botón
+             de compartir (el cuadro con la flecha hacia arriba) y elige
+             <strong>Agregar a inicio</strong>.</p>
+             <p style="margin-top:10px;color:var(--muted)">Chrome en iOS no puede instalarla:
+             tiene que ser Safari.</p>`
+          : `<p><strong>En Android:</strong> abre el menú de tres puntos del navegador y elige
+             <strong>Instalar aplicación</strong> o <strong>Agregar a la pantalla principal</strong>.</p>
+             <p style="margin-top:10px;color:var(--muted)">Si no aparece, revisa que estés
+             entrando por https y no por una dirección local.</p>`;
+        form.prepend(p);
+      }
+    });
+    return;
+  }
+  instalador.prompt();
+  const { outcome } = await instalador.userChoice;
+  if(outcome === 'accepted') instalador = null;
+}
+
+const esApple = () => /iPad|iPhone|iPod/.test(navigator.userAgent)
+  || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+const estaInstalada = () => window.matchMedia('(display-mode: standalone)').matches
+  || window.navigator.standalone === true;
+
+/* ------------------------------------------------ estado de la red */
+function pintarEstadoRed(){
+  const previo = document.querySelector('.sin-red');
+  if(navigator.onLine){ previo && previo.remove(); document.body.classList.remove('hay-aviso'); return; }
+  if(previo) return;
+  const d = document.createElement('div');
+  d.className = 'sin-red';
+  d.setAttribute('role','status');
+  d.textContent = 'Sin conexión. Puedes ver la app, pero no se guardan cambios.';
+  capas.appendChild(d);
+  document.body.classList.add('hay-aviso');
+}
+window.addEventListener('online', ()=>{ pintarEstadoRed(); if(S.usuario) recargar(); });
+window.addEventListener('offline', pintarEstadoRed);
+pintarEstadoRed();
+
+/* -------------------------------------- registro del service worker */
+if('serviceWorker' in navigator && location.protocol !== 'file:'){
+  window.addEventListener('load', async () => {
+    try{
+      const reg = await navigator.serviceWorker.register('./sw.js');
+      reg.addEventListener('updatefound', () => {
+        const nuevo = reg.installing;
+        if(!nuevo) return;
+        nuevo.addEventListener('statechange', () => {
+          if(nuevo.state === 'installed' && navigator.serviceWorker.controller){
+            avisarNuevaVersion(nuevo);
+          }
+        });
+      });
+    }catch(e){ /* sin service worker la app funciona igual, solo no se instala */ }
+  });
+}
+
+function avisarNuevaVersion(worker){
+  if(document.querySelector('.nueva-version')) return;
+  const d = document.createElement('div');
+  d.className = 'nueva-version';
+  d.innerHTML = `Hay una versión nueva <button type="button">Actualizar</button>`;
+  d.querySelector('button').onclick = () => {
+    worker.postMessage('actualizar-ya');
+    location.reload();
+  };
+  capas.appendChild(d);
+}
 </script>
 </body>
 </html>
