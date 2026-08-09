@@ -33,6 +33,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
+html,body{max-width:100%}
 body{
   font-family:var(--body); background:var(--bg); color:var(--ink);
   font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased;
@@ -44,6 +45,8 @@ a{color:var(--verde)}
 :focus-visible{outline:2px solid var(--verde);outline-offset:2px;border-radius:4px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
+.ico{width:20px;height:20px;flex:none;stroke:currentColor;fill:none;stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round}
 .num{font-family:var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 .eyebrow{font-size:11px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;color:var(--muted)}
 .pos{color:var(--verde)} .neg{color:var(--vino)}
@@ -81,20 +84,21 @@ input[type="number"],input[type="date"]{font-family:var(--mono)}
 .aviso-ok{background:var(--verde-claro);color:var(--verde)}
 
 /* ---------------------------------------------------------------- shell */
-.shell{display:grid;grid-template-columns:1fr;min-height:100dvh}
+.shell{display:grid;grid-template-columns:minmax(0,1fr);min-height:100dvh}
 .lateral{display:none}
-.principal{padding:16px 16px calc(var(--nav-h) + 26px);max-width:1120px;width:100%;margin:0 auto}
+.principal{padding:16px 16px calc(var(--nav-h) + 26px);max-width:1120px;width:100%;margin:0 auto;min-width:0}
 
-.barra{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
-.marca{font-family:var(--display);font-weight:800;font-size:19px;letter-spacing:-.02em;margin-right:auto}
+.barra{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;min-width:0}
+.marca{font-family:var(--display);font-weight:800;font-size:19px;letter-spacing:-.02em;margin-right:auto;
+  min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .marca span{color:var(--verde)}
-.periodo{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);
+.periodo{display:flex;align-items:center;gap:6px;flex:none;background:var(--surface);border:1px solid var(--line);
   border-radius:999px;padding:4px 6px;box-shadow:var(--sombra)}
 .periodo button{width:28px;height:28px;border-radius:50%;color:var(--muted);font-size:17px;line-height:1}
 .periodo button:hover{background:var(--surface-2);color:var(--ink)}
-.periodo .etiqueta{font-weight:600;font-size:13.5px;min-width:104px;text-align:center;text-transform:capitalize}
+.periodo .etiqueta{font-weight:600;font-size:13.5px;min-width:96px;text-align:center;text-transform:capitalize}
 
-.tarjeta{background:var(--surface);border-radius:var(--r);box-shadow:var(--sombra);padding:18px;margin-bottom:14px}
+.tarjeta{background:var(--surface);border-radius:var(--r);box-shadow:var(--sombra);padding:18px;margin-bottom:14px;min-width:0}
 .tarjeta h2{font-family:var(--display);font-size:16px;font-weight:600;letter-spacing:-.01em;margin-bottom:2px}
 .tarjeta .pie{font-size:12.5px;color:var(--muted)}
 .cab{display:flex;align-items:flex-start;gap:10px;margin-bottom:14px}
@@ -153,27 +157,30 @@ input[type="number"],input[type="date"]{font-family:var(--mono)}
 .lista-mov{display:flex;flex-direction:column}
 .dia{font-size:11.5px;font-weight:600;color:var(--muted);
   padding:12px 0 6px;border-bottom:1px solid var(--line)}
-.mov{display:grid;grid-template-columns:34px 1fr auto;gap:11px;align-items:center;
+.mov{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:11px;align-items:center;
   padding:11px 0;border-bottom:1px solid var(--line);text-align:left;width:100%}
 .mov:hover{background:var(--surface-2)}
 .chip{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
   font-size:13px;font-weight:700;color:#fff;font-family:var(--display)}
-.mov .t1{font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.mov .t2{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mov .txt{min-width:0;display:block}
+.mov .t1{display:flex;align-items:center;gap:5px;min-width:0;font-size:14px;font-weight:500}
+.mov .t1 .desc{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.mov .t2{display:block;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mov .monto{font-family:var(--mono);font-weight:700;font-size:14px;white-space:nowrap;text-align:right}
-.etq{display:inline-block;font-size:10.5px;font-weight:600;padding:1px 6px;border-radius:5px;
-  background:var(--ambar-claro);color:var(--ambar);margin-left:5px;vertical-align:1px}
+.etq{flex:none;font-size:10.5px;font-weight:600;padding:1px 6px;border-radius:5px;
+  background:var(--ambar-claro);color:var(--ambar)}
 .vacio{text-align:center;padding:34px 16px;color:var(--muted)}
 .vacio p{font-size:14px;margin-bottom:14px}
 
-.filtros{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:6px;-webkit-overflow-scrolling:touch}
+.filtros{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:6px;
+  -webkit-overflow-scrolling:touch;min-width:0;max-width:100%;scrollbar-width:thin}
 .filtros select,.filtros input{width:auto;min-width:132px;flex:none;font-size:13.5px;padding:8px 10px}
 
 /* -------------------------------------------------- tarjetas de registro */
 .reg{border:1px solid var(--line);border-radius:var(--r-sm);padding:13px;margin-bottom:10px}
-.reg .fila1{display:flex;align-items:baseline;gap:8px}
-.reg .nom{font-weight:600;font-size:14.5px}
-.reg .cifra{margin-left:auto;font-family:var(--mono);font-weight:700;font-size:14.5px}
+.reg .fila1{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.reg .nom{font-weight:600;font-size:14.5px;min-width:0;overflow-wrap:anywhere}
+.reg .cifra{margin-left:auto;font-family:var(--mono);font-weight:700;font-size:14.5px;white-space:nowrap}
 .reg .meta{font-size:12.5px;color:var(--muted);margin-top:3px}
 .reg .acc{display:flex;gap:8px;margin-top:11px}
 .reg .acc button{font-size:12.5px;font-weight:600;color:var(--muted);padding:5px 9px;border-radius:6px;
@@ -233,7 +240,7 @@ body.hay-aviso{padding-top:46px}
 
 /* ------------------------------------------------------------ escritorio */
 @media (min-width:900px){
-  .shell{grid-template-columns:216px 1fr}
+  .shell{grid-template-columns:216px minmax(0,1fr)}
   .lateral{display:flex;flex-direction:column;gap:3px;padding:20px 12px;
     background:var(--surface);border-right:1px solid var(--line);position:sticky;top:0;height:100dvh}
   .lateral .marca{margin:0 8px 20px;font-size:20px}
@@ -247,7 +254,7 @@ body.hay-aviso{padding-top:46px}
   .nav,.fab{display:none}
   .principal{padding:24px 28px 40px}
   .kpis{grid-template-columns:repeat(3,1fr)}
-  .doble{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+  .doble{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
   .doble>.tarjeta{margin-bottom:0}
   .reparto{grid-template-columns:180px 1fr;gap:22px}
   .velo{align-items:center;padding:24px}
@@ -299,7 +306,7 @@ const ICONOS = {
   fijos:'<circle cx="12" cy="12" r="8"/><path d="M12 8v4.4l2.8 1.8"/>',
   ajustes:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>'
 };
-const icono = (k,cls='') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONOS[k]}</svg>`;
+const icono = (k,cls='') => `<svg class="ico ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONOS[k]}</svg>`;
 
 /* ------------------------------------------------------------ estado */
 let sb = null;
@@ -754,8 +761,8 @@ function filaMov(m){
   const ini = (nombreCat(m.categoria_id)||'?').slice(0,2).toUpperCase();
   return `<button class="mov" data-editar="${m.id}">
     <span class="chip" style="background:${col}">${esc(ini)}</span>
-    <span style="min-width:0">
-      <span class="t1">${esc(m.descripcion || nombreCat(m.categoria_id))}${
+    <span class="txt">
+      <span class="t1"><span class="desc">${esc(m.descripcion || nombreCat(m.categoria_id))}</span>${
         m.estado==='Pendiente'?'<span class="etq">pendiente</span>':''}</span>
       <span class="t2">${m.deuda_id
         ? 'Abono a ' + esc(nombreDeuda(m.deuda_id))
@@ -1381,8 +1388,8 @@ function menuMas(){
   velo.innerHTML = `<div class="hoja" role="dialog" aria-modal="true" aria-label="Más secciones">
     <h3>Más</h3>
     ${items.map(([k,t,ic])=>`<a href="#${k}" data-ir
-      style="display:flex;align-items:center;gap:12px;padding:14px 4px;border-bottom:1px solid var(--line);
-      text-decoration:none;color:var(--ink);font-weight:600;font-size:15px">
+      style="display:flex;align-items:center;gap:12px;padding:15px 4px;border-bottom:1px solid var(--line);
+      text-decoration:none;color:var(--ink);font-weight:600;font-size:15px;line-height:1.2">
       ${icono(ic)}${t}</a>`).join('')}
     <div class="acciones"><button type="button" class="btn btn-sec" data-cerrar>Cerrar</button></div>
   </div>`;
