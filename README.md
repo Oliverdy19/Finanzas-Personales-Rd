@@ -1,5 +1,3 @@
-# Finanzas-Personales-Rd
-
 # Mis cuentas · RD$
 
 App web para llevar presupuesto, ingresos, gastos, deudas y metas de ahorro en pesos
@@ -9,9 +7,13 @@ cálculos, pero accesible desde el celular y con los datos en Supabase.
 Sin build, sin `npm install`. Son tres archivos estáticos que GitHub Pages sirve tal cual.
 
 ```
-index.html     la app completa (HTML + CSS + JS en un solo archivo)
-config.js      tus claves de Supabase
-schema.sql     tablas, seguridad, vistas y funciones
+index.html                    la app completa (HTML + CSS + JS en un solo archivo)
+config.js                     tus claves de Supabase
+manifest.json                 datos de la app instalable
+sw.js                         service worker
+iconos/                       iconos de la pantalla de inicio
+schema.sql                    tablas, seguridad, vistas y funciones
+migracion_abonos_deuda.sql    pagos de deuda desde Movimientos
 ```
 
 ---
@@ -20,7 +22,8 @@ schema.sql     tablas, seguridad, vistas y funciones
 
 1. Entra a [supabase.com](https://supabase.com) y crea un proyecto (el plan gratis alcanza de sobra).
 2. Abre **SQL Editor › New query**, pega todo el contenido de `schema.sql` y dale **Run**.
-3. Debe terminar sin errores. Puedes volver a correrlo cuando quieras: es idempotente.
+3. Repite con `migracion_abonos_deuda.sql`. **En ese orden.**
+4. Ambos deben terminar sin errores. Puedes volver a correrlos cuando quieras: son idempotentes.
 
 Lo que queda creado:
 
@@ -96,6 +99,40 @@ Como la navegación usa `#hash`, no hace falta ninguna regla de reescritura ni u
 
 ---
 
+## Instalarla en el teléfono
+
+Es una PWA: se instala desde el navegador, sin tienda de aplicaciones.
+
+- **Android (Chrome):** entra a la página y toca *Instalar aplicación* en el menú de tres
+  puntos. También aparece un botón en **Ajustes › Instalar en el teléfono**.
+- **iPhone (Safari):** botón de compartir › *Agregar a inicio*. Tiene que ser Safari;
+  Chrome en iOS no puede instalar PWAs.
+
+Queda con su ícono, abre a pantalla completa y arranca al instante.
+
+**Lo que sí funciona sin conexión:** la app abre y te avisa que estás sin señal.
+**Lo que no:** tus movimientos viven en Supabase, así que sin internet no hay datos ni se
+guardan cambios. Guardarlos en el teléfono exigiría una cola de sincronización con
+resolución de conflictos, que es otro proyecto.
+
+Cuando cambies `index.html`, sube el número de `VERSION` en `sw.js`. Si no, los teléfonos
+que ya la tengan instalada seguirán con la versión vieja en caché. Al subirlo, la app
+muestra un aviso de *Hay una versión nueva* con su botón de actualizar.
+
+### Si más adelante la quieres en Play Store
+
+El mismo código sirve. Dos caminos, sin reescribir nada:
+
+- **Bubblewrap / TWA** (solo Android): empaqueta la PWA como APK. Necesitas verificar el
+  dominio, y GitHub Pages no te deja poner el archivo `assetlinks.json` donde hace falta,
+  así que tendrías que mover el hosting.
+- **Capacitor:** `npm i @capacitor/core @capacitor/cli`, `npx cap init`, copias los
+  archivos a `www/`, `npx cap add android`. Da acceso a cámara, notificaciones y biometría,
+  y sube a las dos tiendas. Requiere Android Studio y, para iOS, una Mac y la cuenta de
+  desarrollador de Apple (US$99 al año).
+
+Para uso personal la PWA alcanza y no cuesta nada.
+
 ## Cómo está pensada
 
 - **Movimientos manda.** El resumen, el presupuesto y los gráficos salen todos de ahí.
@@ -103,6 +140,16 @@ Como la navegación usa `#hash`, no hace falta ninguna regla de reescritura ni u
   registras el pago (hay un botón *Registrar el pago* que lo hace por ti).
 - **Fijo vs. variable** lo decide la casilla "Es un gasto fijo o recurrente" de cada
   movimiento, igual que en el Excel.
+- **Los pagos de deuda son movimientos.** Al registrar un gasto puedes elegir a cuál de tus
+  deudas se abona, o entrar desde Deudas › *Registrar pago* y el formulario viene precargado
+  con la cuota. El saldo baja cuando el movimiento queda en estado **Pagado**; si lo dejas
+  en Pendiente, el saldo no se mueve hasta que lo confirmes.
+- **El saldo de una deuda se recalcula, no se acumula:**
+  `saldo_pendiente = saldo_inicial − abonos pagados`. Por eso el número queda correcto
+  aunque edites el monto de un pago, lo desmarques, lo borres o lo cambies a otra deuda.
+  Cuando llega a cero, la deuda pasa sola a *Pagada*.
+- **Para corregir un saldo a mano** edita la deuda y escribe lo que debes hoy: la función
+  `ajustar_saldo_deuda` recalcula el punto de partida sin descuadrar los abonos ya hechos.
 - **El presupuesto es por mes.** Cuando entras a un mes nuevo y está vacío, aparece un
   botón para copiar el del mes anterior.
 - **Semáforo del presupuesto:** verde por debajo del 80%, ámbar del 80% al 100%,
@@ -126,3 +173,4 @@ python3 -m http.server 8080
 | Entras pero no aparece nada | ¿Corriste `schema.sql` completo? Revisa el SQL Editor por errores |
 | "new row violates row-level security" | La sesión expiró: cierra sesión y vuelve a entrar |
 | El correo de confirmación no llega | Desactiva *Confirm email* en Authentication › Providers |
+| `Access to manifest… blocked by CORS` con una URL de `github.dev/pf-signin` | Estás en un Codespace con el puerto **privado**. En la pestaña *Ports*, clic derecho sobre el 8080 › *Port Visibility* › **Public**. En GitHub Pages no ocurre |
