@@ -1,0 +1,35 @@
+{
+  "name": "Mis cuentas RD$",
+  "short_name": "Mis cuentas",
+  "description": "Presupuesto, ingresos, gastos, deudas y metas de ahorro en pesos dominicanos.",
+  "lang": "es-DO",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "id": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#EDF0F4",
+  "theme_color": "#0F1C2E",
+  "categories": ["finance", "productivity"],
+  "icons": [
+    { "src": "./iconos/icono-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./iconos/icono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./iconos/icono-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Registrar un gasto",
+      "short_name": "Gasto",
+      "url": "./#movimientos",
+      "icons": [{ "src": "./iconos/icono-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Ver mis deudas",
+      "short_name": "Deudas",
+      "url": "./#deudas",
+      "icons": [{ "src": "./iconos/icono-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
